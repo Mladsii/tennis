@@ -68,23 +68,23 @@
     <button class="secondary" onclick="showProfile()">✏️ Изменить профиль</button>
   </div>
 
-<!-- Профиль -->
-<div id="screen-profile" style="display:none;">
-  <h2>👤 Профиль</h2>
-  <label>Имя (как вас зовут):</label>
-  <input type="text" id="name-input" placeholder="Например, Maxim или Максим">
+  <!-- Профиль -->
+  <div id="screen-profile" style="display:none;">
+    <h2>👤 Профиль</h2>
+    <label>Имя (как вас зовут):</label>
+    <input type="text" id="name-input" placeholder="Например, Maxim или Максим">
 
-  <p><strong>Город:</strong> Nizhny Novgorod</p>
-  <label>Уровень игры:</label>
-  <select id="level-select">
-    <option value="2.5">Beginner / 2.5</option>
-    <option value="3.0">3.0</option>
-    <option value="3.5" selected>3.5</option>
-    <option value="4.0+">4.0+</option>
-  </select>
-  <button class="primary" onclick="saveProfile()">💾 Сохранить</button>
-  <button class="secondary" onclick="showHome()">← Назад</button>
-</div>
+    <p><strong>Город:</strong> Nizhny Novgorod</p>
+    <label>Уровень игры:</label>
+    <select id="level-select">
+      <option value="2.5">Beginner / 2.5</option>
+      <option value="3.0">3.0</option>
+      <option value="3.5" selected>3.5</option>
+      <option value="4.0+">4.0+</option>
+    </select>
+    <button class="primary" onclick="saveProfile()">💾 Сохранить</button>
+    <button class="secondary" onclick="showHome()">← Назад</button>
+  </div>
 
   <!-- Создать игру -->
   <div id="screen-create" style="display:none;">
@@ -164,7 +164,6 @@
       window.firstName = user.first_name || 'Player';
       window.username = user.username || '';
 
-      document.getElementById('name-display').textContent = window.firstName;
       document.getElementById('profile-name').textContent = window.firstName;
 
       loadProfile(); // проверим, есть ли профиль
@@ -184,7 +183,6 @@
     }
 
     function showCreateGame() {
-      // Проверка: если профиль не сохранён — в профиль
       if (!localStorage.getItem('profile_saved')) {
         Telegram.WebApp.showAlert('Сначала заполните профиль!');
         showProfile();
@@ -200,63 +198,64 @@
       loadGames();
     }
 
-// === PROFILE ===
-async function loadProfile() {
-  try {
-    const res = await fetch(`${N8N_URL}/profile?telegram_id=${window.telegramId}`);
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.first_name) {
-        // Имя из базы
-        document.getElementById('name-input').value = data.first_name;
-        document.getElementById('profile-name').textContent = data.first_name;
-        document.getElementById('level-select').value = data.level || '3.5';
-        localStorage.setItem('profile_saved', 'true');
-        showHome();
+    // === PROFILE ===
+    async function loadProfile() {
+      try {
+        const res = await fetch(`${N8N_URL}/profile?telegram_id=${window.telegramId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.first_name) {
+            document.getElementById('name-input').value = data.first_name;
+            document.getElementById('profile-name').textContent = data.first_name;
+            document.getElementById('profile-level').textContent = data.level || '—';
+            document.getElementById('level-select').value = data.level || '3.5';
+            localStorage.setItem('profile_saved', 'true');
+            showHome();
+            return;
+          }
+        }
+      } catch (e) {}
+      // Если профиля нет — подставляем имя из Telegram
+      document.getElementById('name-input').value = window.firstName;
+      showProfile();
+    }
+
+    async function saveProfile() {
+      const name = document.getElementById('name-input').value.trim();
+      const level = document.getElementById('level-select').value;
+
+      if (!name) {
+        Telegram.WebApp.showAlert('Введите имя!');
         return;
       }
+
+      const data = {
+        telegram_id: window.telegramId,
+        first_name: name,
+        username: window.username,
+        level: level,
+        city: 'Nizhny Novgorod'
+      };
+
+      try {
+        const res = await fetch(N8N_URL + '/profile', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(data)
+        });
+        if (res.ok) {
+          document.getElementById('profile-name').textContent = name;
+          document.getElementById('profile-level').textContent = level;
+          localStorage.setItem('profile_saved', 'true');
+          Telegram.WebApp.showAlert('✅ Профиль сохранён!');
+          showHome();
+        } else {
+          Telegram.WebApp.showAlert('❌ Ошибка сохранения');
+        }
+      } catch (e) {
+        Telegram.WebApp.showAlert('🌐 Нет связи с сервером');
+      }
     }
-  } catch (e) {}
-  // Если профиля нет — заполняем имя из Telegram по умолчанию
-  document.getElementById('name-input').value = window.firstName;
-  showProfile();
-}
-
-async function saveProfile() {
-  const name = document.getElementById('name-input').value.trim();
-  const level = document.getElementById('level-select').value;
-
-  if (!name) {
-    Telegram.WebApp.showAlert('Введите имя!');
-    return;
-  }
-
-  const data = {
-    telegram_id: window.telegramId,
-    first_name: name,
-    username: window.username,
-    level: level,
-    city: 'Nizhny Novgorod'
-  };
-
-  try {
-    const res = await fetch(N8N_URL + '/profile', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(data)
-    });
-    if (res.ok) {
-      document.getElementById('profile-name').textContent = name;
-      localStorage.setItem('profile_saved', 'true');
-      Telegram.WebApp.showAlert('✅ Профиль сохранён!');
-      showHome();
-    } else {
-      Telegram.WebApp.showAlert('❌ Ошибка сохранения');
-    }
-  } catch (e) {
-    Telegram.WebApp.showAlert('🌐 Нет связи с сервером');
-  }
-}
 
     // === CREATE GAME ===
     async function createGame() {
@@ -268,7 +267,6 @@ async function saveProfile() {
       const levelMax = document.getElementById('game-level-max').value;
       const format = document.getElementById('game-format').value;
 
-      // Простая валидация
       if (levelMin > levelMax) {
         Telegram.WebApp.showAlert('❌ Мин. уровень не может быть выше макс.');
         return;
@@ -276,7 +274,7 @@ async function saveProfile() {
 
       const gameData = {
         creator_telegram_id: window.telegramId,
-        date: date, // n8n сам преобразует в дату
+        date: date,
         time_start: time,
         district: district,
         court_address: address || null,
@@ -331,12 +329,10 @@ async function saveProfile() {
 
     // === JOIN GAME ===
     function joinGame(creatorId) {
-      // Временно — просто откроем чат через share
-      Telegram.WebApp.openTelegramLink(`https://t.me/${window.username || 'user'}?start=game_${creatorId}`);
-      // Позже: вызов webhook → бот отправит сообщение создателю
+      Telegram.WebApp.showAlert(`Скоро можно будет написать!\nID: ${creatorId}`);
     }
 
-    // Старт с главного экрана
+    // Показываем главный экран по умолчанию
     showHome();
   </script>
 </body>
