@@ -5,51 +5,150 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tennis Partner</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 20px; }
-    button { margin: 10px 0; padding: 12px 24px; background: #3390EC; color: white; border: none; border-radius: 8px; }
-    select, input { width: 100%; padding: 10px; margin: 8px 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f9f9f9;
+      padding: 16px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    h1, h2 {
+      color: #1a1a1a;
+      text-align: center;
+    }
+    button {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      margin: 12px 0;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    button:active { opacity: 0.8; }
+    .primary { background: #3390EC; color: white; }
+    .secondary { background: #e9ecef; color: #333; }
+    .disabled { background: #ccc; color: #666; cursor: not-allowed; }
+    select, input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    label {
+      display: block;
+      margin: 6px 0;
+      font-weight: 500;
+    }
+    .game-card {
+      background: white;
+      padding: 16px;
+      border-radius: 12px;
+      margin: 12px 0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
   </style>
 </head>
 <body>
-  <h1>🎾 Найди партнёра за 2 минуты</h1>
+  <h1>🎾 Tennis NN</h1>
 
-  <div id="screen-welcome" style="display:none;">
-    <button onclick="showProfile()">👤 Профиль</button>
-    <button onclick="findPartners()">🎾 Найти партнёра</button>
+  <!-- Главный экран -->
+  <div id="screen-home" style="display:none;">
+    <div id="profile-preview" style="text-align:center; margin-bottom:20px;">
+      <strong id="profile-name">—</strong><br>
+      Уровень: <span id="profile-level">не задан</span>
+    </div>
+    <button class="primary" onclick="showCreateGame()">➕ Создать игру</button>
+    <button class="primary" onclick="showFindGames()">🔍 Найти игру</button>
+    <button class="secondary" onclick="showProfile()">✏️ Изменить профиль</button>
   </div>
 
+  <!-- Профиль -->
   <div id="screen-profile" style="display:none;">
-    <h2>Профиль</h2>
-    <button onclick="showWelcome()" style="background:#6c757d;">← Назад</button>
-    <select id="level">
+    <h2>👤 Профиль</h2>
+    <p><strong>Имя:</strong> <span id="name-display">—</span></p>
+    <p><strong>Город:</strong> Nizhny Novgorod</p>
+    <label>Уровень игры:</label>
+    <select id="level-select">
       <option value="2.5">Beginner / 2.5</option>
       <option value="3.0">3.0</option>
       <option value="3.5" selected>3.5</option>
-      <option value="4.0">4.0+</option>
+      <option value="4.0+">4.0+</option>
     </select>
-    <select id="district">
-      <option value="Center">Center</option>
-      <option value="West" selected>West</option>
-      <option value="East">East</option>
-    </select>
-    <div>
-      <label><input type="checkbox" id="avail_evening" checked> Будни вечер</label>
-      <label><input type="checkbox" id="avail_weekend"> Выходные</label>
-    </div>
-    <button onclick="saveProfile()">💾 Сохранить</button>
+    <button class="primary" onclick="saveProfile()">💾 Сохранить</button>
+    <button class="secondary" onclick="showHome()">← Назад</button>
   </div>
 
-  <div id="screen-partners" style="display:none;">
-    <h2>Партнёры рядом</h2>
-    <button onclick="showWelcome()" style="background:#6c757d;">← Назад</button>
-    <div id="partners-list"></div>
-    <button onclick="showWelcome()">← Назад</button>
+  <!-- Создать игру -->
+  <div id="screen-create" style="display:none;">
+    <h2>➕ Создать игру</h2>
+    <label>Дата:</label>
+    <select id="game-date">
+      <option value="today">Сегодня</option>
+      <option value="tomorrow">Завтра</option>
+    </select>
+    <label>Время:</label>
+    <select id="game-time">
+      <option value="18:00">18:00</option>
+      <option value="18:30">18:30</option>
+      <option value="19:00" selected>19:00</option>
+      <option value="19:30">19:30</option>
+      <option value="20:00">20:00</option>
+      <option value="20:30">20:30</option>
+      <option value="21:00">21:00</option>
+    </select>
+    <label>Район:</label>
+    <select id="game-district">
+      <option value="Avtozavodsky">Автозаводский</option>
+      <option value="Sormovo">Сормово</option>
+      <option value="Nizhegorodsky">Нижегородский</option>
+      <option value="Kanavino">Канавино</option>
+    </select>
+    <label>Адрес корта (опционально):</label>
+    <input type="text" id="game-address" placeholder="Напр., ул. Родионова, 10">
+
+    <label>Уровень партнёра:</label>
+    <div style="display:flex;gap:10px;">
+      <select id="game-level-min" style="flex:1;">
+        <option value="2.5">От 2.5</option>
+        <option value="3.0">От 3.0</option>
+        <option value="3.5" selected>От 3.5</option>
+        <option value="4.0+">От 4.0+</option>
+      </select>
+      <select id="game-level-max" style="flex:1;">
+        <option value="2.5">До 2.5</option>
+        <option value="3.0">До 3.0</option>
+        <option value="3.5">До 3.5</option>
+        <option value="4.0+" selected>До 4.0+</option>
+      </select>
+    </div>
+
+    <label>Формат:</label>
+    <select id="game-format">
+      <option value="single">Single</option>
+      <option value="double">Double</option>
+    </select>
+
+    <button class="primary" onclick="createGame()">🟢 Опубликовать игру</button>
+    <button class="secondary" onclick="showHome()">← Назад</button>
+  </div>
+
+  <!-- Найти игру -->
+  <div id="screen-games" style="display:none;">
+    <h2>🔍 Открытые игры</h2>
+    <div id="games-list">Загрузка...</div>
+    <button class="secondary" onclick="showHome()">← Назад</button>
   </div>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
     // === CONFIG ===
-    const N8N_URL = 'https://n8nai-agentmmi.ru/webhook-test/98aecc7e-75ec-48dc-9a49-422dd0c2dcf4'; // ← ЗАМЕНИ НА СВОЙ NGROK URL
+    const N8N_URL = 'https://n8nai-agentmmi.ru/webhook-test/98aecc7e-75ec-48dc-9a49-422dd0c2dcf4'; // ← ЗАМЕНИ НА СВОЙ!
 
     // === INIT ===
     Telegram.WebApp.ready();
@@ -59,45 +158,73 @@
     if (!user) {
       alert('Откройте через Telegram!');
     } else {
-      window.telegramId = user.id;
-      window.userName = user.first_name || 'Player';
+      window.telegramId = String(user.id);
+      window.firstName = user.first_name || 'Player';
+      window.username = user.username || '';
+
+      document.getElementById('name-display').textContent = window.firstName;
+      document.getElementById('profile-name').textContent = window.firstName;
+
       loadProfile(); // проверим, есть ли профиль
     }
 
     // === SCREENS ===
-    function showWelcome() {
-      document.getElementById('screen-welcome').style.display = 'block';
+    function showHome() {
+      document.getElementById('screen-home').style.display = 'block';
       document.getElementById('screen-profile').style.display = 'none';
-      document.getElementById('screen-partners').style.display = 'none';
+      document.getElementById('screen-create').style.display = 'none';
+      document.getElementById('screen-games').style.display = 'none';
     }
 
     function showProfile() {
-      document.getElementById('screen-welcome').style.display = 'none';
+      document.getElementById('screen-home').style.display = 'none';
       document.getElementById('screen-profile').style.display = 'block';
     }
 
-    function showPartners() {
-      document.getElementById('screen-welcome').style.display = 'none';
-      document.getElementById('screen-partners').style.display = 'block';
+    function showCreateGame() {
+      // Проверка: если профиль не сохранён — в профиль
+      if (!localStorage.getItem('profile_saved')) {
+        Telegram.WebApp.showAlert('Сначала заполните профиль!');
+        showProfile();
+        return;
+      }
+      document.getElementById('screen-home').style.display = 'none';
+      document.getElementById('screen-create').style.display = 'block';
+    }
+
+    function showFindGames() {
+      document.getElementById('screen-home').style.display = 'none';
+      document.getElementById('screen-games').style.display = 'block';
+      loadGames();
     }
 
     // === PROFILE ===
     async function loadProfile() {
-      // Можно добавить проверку профиля позже
-      showWelcome();
+      try {
+        const res = await fetch(`${N8N_URL}/profile?telegram_id=${window.telegramId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.level) {
+            document.getElementById('profile-level').textContent = data.level;
+            document.getElementById('level-select').value = data.level;
+            localStorage.setItem('profile_saved', 'true');
+            showHome();
+            return;
+          }
+        }
+      } catch (e) {}
+      // Если профиля нет — покажем форму
+      showProfile();
     }
 
     async function saveProfile() {
+      const level = document.getElementById('level-select').value;
       const data = {
         telegram_id: window.telegramId,
-        name: window.userName,
-        level: document.getElementById('level').value,
-        district: document.getElementById('district').value,
-        availability: [
-          ...(document.getElementById('avail_evening').checked ? ['evening'] : []),
-          ...(document.getElementById('avail_weekend').checked ? ['weekend'] : [])
-        ],
-        format: ['single'] // можно расширить
+        first_name: window.firstName,
+        username: window.username,
+        level: level,
+        city: 'Nizhny Novgorod'
       };
 
       try {
@@ -107,35 +234,82 @@
           body: JSON.stringify(data)
         });
         if (res.ok) {
-          alert('✅ Профиль сохранён!');
-          showWelcome();
+          document.getElementById('profile-level').textContent = level;
+          localStorage.setItem('profile_saved', 'true');
+          Telegram.WebApp.showAlert('✅ Профиль сохранён!');
+          showHome();
         } else {
-          alert('❌ Ошибка сохранения');
+          Telegram.WebApp.showAlert('❌ Ошибка сохранения');
         }
       } catch (e) {
-        alert('🌐 Нет связи с сервером');
+        Telegram.WebApp.showAlert('🌐 Нет связи с сервером');
       }
     }
 
-    // === PARTNERS ===
-    async function findPartners() {
-      showPartners();
-      const listEl = document.getElementById('partners-list');
-      listEl.innerHTML = '<p>Загрузка...</p>';
+    // === CREATE GAME ===
+    async function createGame() {
+      const date = document.getElementById('game-date').value;
+      const time = document.getElementById('game-time').value;
+      const district = document.getElementById('game-district').value;
+      const address = document.getElementById('game-address').value.trim();
+      const levelMin = document.getElementById('game-level-min').value;
+      const levelMax = document.getElementById('game-level-max').value;
+      const format = document.getElementById('game-format').value;
+
+      // Простая валидация
+      if (levelMin > levelMax) {
+        Telegram.WebApp.showAlert('❌ Мин. уровень не может быть выше макс.');
+        return;
+      }
+
+      const gameData = {
+        creator_telegram_id: window.telegramId,
+        date: date, // n8n сам преобразует в дату
+        time_start: time,
+        district: district,
+        court_address: address || null,
+        level_min: levelMin,
+        level_max: levelMax,
+        format: format,
+        players_needed: format === 'single' ? 1 : 2
+      };
 
       try {
-        const res = await fetch(`${N8N_URL}/partners?telegram_id=${window.telegramId}`);
-        const partners = await res.json();
+        const res = await fetch(N8N_URL + '/game', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(gameData)
+        });
+        if (res.ok) {
+          Telegram.WebApp.showAlert('✅ Игра опубликована!');
+          showHome();
+        } else {
+          Telegram.WebApp.showAlert('❌ Не удалось создать игру');
+        }
+      } catch (e) {
+        Telegram.WebApp.showAlert('🌐 Нет связи с сервером');
+      }
+    }
 
-        if (!partners.length) {
-          listEl.innerHTML = '<p>Никого нет 😕</p>';
+    // === LOAD GAMES ===
+    async function loadGames() {
+      const listEl = document.getElementById('games-list');
+      listEl.innerHTML = '<p>Загрузка...</p>';
+      try {
+        const res = await fetch(`${N8N_URL}/games?city=Nizhny%20Novgorod`);
+        const games = await res.json();
+        if (!games.length) {
+          listEl.innerHTML = '<p>Нет открытых игр 😕</p>';
           return;
         }
-
-        listEl.innerHTML = partners.map(p => `
-          <div style="border:1px solid #eee; padding:12px; margin:10px 0; border-radius:8px;">
-            <strong>${p.name}</strong> • ${p.level} • ${p.district}<br>
-            <button onclick="openChat('${p.telegram_id}')">Написать</button>
+        listEl.innerHTML = games.map(g => `
+          <div class="game-card">
+            <strong>🎾 ${g.date === 'today' ? 'Сегодня' : 'Завтра'}, ${g.time_start}</strong><br>
+            📍 ${g.district}<br>
+            🔢 Уровень: ${g.level_min}–${g.level_max}<br>
+            👤 ${g.creator_first_name || 'Игрок'}
+            <br><br>
+            <button class="primary" onclick="joinGame('${g.creator_telegram_id}')">Присоединиться</button>
           </div>
         `).join('');
       } catch (e) {
@@ -143,14 +317,15 @@
       }
     }
 
-    // === TELEGRAM CHAT ===
-    function openChat(telegramId) {
-      // Telegram не даёт открыть чат по ID напрямую.
-      // Решение: отправим сообщение через бота (позже в n8n),
-      // А пока — просто покажем уведомление.
-      Telegram.WebApp.showAlert(`Скоро сможешь написать ${telegramId}!`);
-      // В будущем: вызов webhook в n8n, который отправит сообщение от бота
+    // === JOIN GAME ===
+    function joinGame(creatorId) {
+      // Временно — просто откроем чат через share
+      Telegram.WebApp.openTelegramLink(`https://t.me/${window.username || 'user'}?start=game_${creatorId}`);
+      // Позже: вызов webhook → бот отправит сообщение создателю
     }
+
+    // Старт с главного экрана
+    showHome();
   </script>
 </body>
 </html>
