@@ -31,7 +31,6 @@
     button:active { opacity: 0.8; }
     .primary { background: #3390EC; color: white; }
     .secondary { background: #e9ecef; color: #333; }
-    .disabled { background: #ccc; color: #666; cursor: not-allowed; }
     select, input {
       width: 100%;
       padding: 12px;
@@ -164,9 +163,7 @@
       window.firstName = user.first_name || 'Player';
       window.username = user.username || '';
 
-      document.getElementById('profile-name').textContent = window.firstName;
-
-      loadProfile(); // проверим, есть ли профиль
+      loadProfile(); // всегда проверяем профиль на сервере
     }
 
     // === SCREENS ===
@@ -180,16 +177,26 @@
     function showProfile() {
       document.getElementById('screen-home').style.display = 'none';
       document.getElementById('screen-profile').style.display = 'block';
+      // Подставляем имя из Telegram при входе в профиль
+      if (!document.getElementById('name-input').value) {
+        document.getElementById('name-input').value = window.firstName;
+      }
     }
 
-    function showCreateGame() {
-      if (!localStorage.getItem('profile_saved')) {
+    async function showCreateGame() {
+      // Проверяем профиль на сервере — каждый раз!
+      try {
+        const res = await fetch(`${N8N_URL}/profile?telegram_id=${window.telegramId}`);
+        if (!res.ok) throw new Error('Not found');
+        const data = await res.json();
+        if (!data.first_name || !data.level) throw new Error('Incomplete');
+        // Профиль в порядке → показываем форму
+        document.getElementById('screen-home').style.display = 'none';
+        document.getElementById('screen-create').style.display = 'block';
+      } catch (e) {
         Telegram.WebApp.showAlert('Сначала заполните профиль!');
         showProfile();
-        return;
       }
-      document.getElementById('screen-home').style.display = 'none';
-      document.getElementById('screen-create').style.display = 'block';
     }
 
     function showFindGames() {
@@ -209,14 +216,12 @@
             document.getElementById('profile-name').textContent = data.first_name;
             document.getElementById('profile-level').textContent = data.level || '—';
             document.getElementById('level-select').value = data.level || '3.5';
-            localStorage.setItem('profile_saved', 'true');
             showHome();
             return;
           }
         }
       } catch (e) {}
-      // Если профиля нет — подставляем имя из Telegram
-      document.getElementById('name-input').value = window.firstName;
+      // Если профиля нет — показываем форму
       showProfile();
     }
 
@@ -246,7 +251,6 @@
         if (res.ok) {
           document.getElementById('profile-name').textContent = name;
           document.getElementById('profile-level').textContent = level;
-          localStorage.setItem('profile_saved', 'true');
           Telegram.WebApp.showAlert('✅ Профиль сохранён!');
           showHome();
         } else {
@@ -332,8 +336,8 @@
       Telegram.WebApp.showAlert(`Скоро можно будет написать!\nID: ${creatorId}`);
     }
 
-    // Показываем главный экран по умолчанию
-    showHome();
+    // Начинаем с загрузки профиля
+    // showHome() вызовется автоматически из loadProfile()
   </script>
 </body>
 </html>
