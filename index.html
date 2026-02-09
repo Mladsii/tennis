@@ -202,7 +202,38 @@
       document.getElementById('screen-games').style.display = 'block';
       loadGames();
     }
+    async function loadProfile() {
+  try {
+    const res = await fetch(`${N8N_URL}/profile?telegram_id=${window.telegramId}`);
+    if (res.ok) {
+      const rawData = await res.json();
 
+      // Определяем, пришёл ли массив или объект
+      let profileData = null;
+      if (Array.isArray(rawData) && rawData.length > 0) {
+        profileData = rawData[0]; // первый элемент массива
+      } else if (rawData && typeof rawData === 'object' && !Array.isArray(rawData)) {
+        profileData = rawData; // сам объект
+      }
+
+      if (profileData && profileData.first_name) {
+        document.getElementById('profile-name').textContent = profileData.first_name;
+        document.getElementById('profile-level').textContent = profileData.level || '—';
+      } else {
+        document.getElementById('profile-name').textContent = '—';
+        document.getElementById('profile-level').textContent = 'не задан';
+      }
+    } else {
+      document.getElementById('profile-name').textContent = '—';
+      document.getElementById('profile-level').textContent = 'не задан';
+    }
+  } catch (e) {
+    console.error('Ошибка загрузки профиля:', e);
+    document.getElementById('profile-name').textContent = '—';
+    document.getElementById('profile-level').textContent = 'не задан';
+  }
+  showHome();
+}
     // === PROFILE ===
     async function loadProfile() {
       try {
