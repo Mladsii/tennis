@@ -234,30 +234,6 @@
   }
   showHome();
 }
-    // === PROFILE ===
-    async function loadProfile() {
-      try {
-        const res = await fetch(`${N8N_URL}/profile?telegram_id=${window.telegramId}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.first_name) {
-            document.getElementById('profile-name').textContent = data.first_name;
-            document.getElementById('profile-level').textContent = data.level || '—';
-          } else {
-            document.getElementById('profile-name').textContent = '—';
-            document.getElementById('profile-level').textContent = 'не задан';
-          }
-        } else {
-          document.getElementById('profile-name').textContent = '—';
-          document.getElementById('profile-level').textContent = 'не задан';
-        }
-      } catch (e) {
-        document.getElementById('profile-name').textContent = '—';
-        document.getElementById('profile-level').textContent = 'не задан';
-      }
-      // ВСЕГДА показываем главный экран после загрузки
-      showHome();
-    }
 
     async function saveProfile() {
       const name = document.getElementById('name-input').value.trim();
