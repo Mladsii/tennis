@@ -149,7 +149,10 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
     // === CONFIG ===
-    const N8N_URL = 'https://n8nai-agentmmi.ru/webhook/98aecc7e-75ec-48dc-9a49-422dd0c2dcf4'; // твой URL (пробелы убраны)
+    const N8N_URL = 'https://n8nai-agentmmi.ru/webhook/98aecc7e-75ec-48dc-9a49-422dd0c2dcf4';
+
+    // === ГЛОБАЛЬНАЯ ПЕРЕМЕННАЯ ДЛЯ ПРОФИЛЯ ===
+    window.currentUserProfile = null;
 
     // === INIT ===
     Telegram.WebApp.ready();
@@ -163,7 +166,7 @@
       window.firstName = user.first_name || 'Player';
       window.username = user.username || '';
 
-      loadProfile(); // загружаем данные, но не перенаправляем
+      loadProfile(); // загружаем один раз при старте
     }
 
     // === SCREENS ===
@@ -177,21 +180,17 @@
     function showProfile() {
       document.getElementById('screen-home').style.display = 'none';
       document.getElementById('screen-profile').style.display = 'block';
-      // Подставляем имя из Telegram, если поле пустое
       if (!document.getElementById('name-input').value.trim()) {
         document.getElementById('name-input').value = window.firstName;
       }
     }
 
-    async function showCreateGame() {
-      try {
-        const res = await fetch(`${N8N_URL}/profile?telegram_id=${window.telegramId}`);
-        if (!res.ok) throw new Error('Not found');
-        const data = await res.json();
-        if (!data.first_name || !data.level) throw new Error('Incomplete');
+    // === ОПТИМИЗИРОВАННАЯ ПРОВЕРКА ===
+    function showCreateGame() {
+      if (window.currentUserProfile && window.currentUserProfile.first_name && window.currentUserProfile.level) {
         document.getElementById('screen-home').style.display = 'none';
         document.getElementById('screen-create').style.display = 'block';
-      } catch (e) {
+      } else {
         Telegram.WebApp.showAlert('Сначала заполните профиль!');
         showProfile();
       }
@@ -202,38 +201,43 @@
       document.getElementById('screen-games').style.display = 'block';
       loadGames();
     }
+
+    // === PROFILE ===
     async function loadProfile() {
-  try {
-    const res = await fetch(`${N8N_URL}/profile?telegram_id=${window.telegramId}`);
-    if (res.ok) {
-      const rawData = await res.json();
+      try {
+        const res = await fetch(`${N8N_URL}/profile?telegram_id=${window.telegramId}`);
+        if (res.ok) {
+          const rawData = await res.json();
 
-      // Определяем, пришёл ли массив или объект
-      let profileData = null;
-      if (Array.isArray(rawData) && rawData.length > 0) {
-        profileData = rawData[0]; // первый элемент массива
-      } else if (rawData && typeof rawData === 'object' && !Array.isArray(rawData)) {
-        profileData = rawData; // сам объект
-      }
+          let profileData = null;
+          if (Array.isArray(rawData) && rawData.length > 0) {
+            profileData = rawData[0];
+          } else if (rawData && typeof rawData === 'object' && !Array.isArray(rawData)) {
+            profileData = rawData;
+          }
 
-      if (profileData && profileData.first_name) {
-        document.getElementById('profile-name').textContent = profileData.first_name;
-        document.getElementById('profile-level').textContent = profileData.level || '—';
-      } else {
+          if (profileData && profileData.first_name) {
+            window.currentUserProfile = profileData; // ← сохраняем в память!
+            document.getElementById('profile-name').textContent = profileData.first_name;
+            document.getElementById('profile-level').textContent = profileData.level || '—';
+          } else {
+            window.currentUserProfile = null;
+            document.getElementById('profile-name').textContent = '—';
+            document.getElementById('profile-level').textContent = 'не задан';
+          }
+        } else {
+          window.currentUserProfile = null;
+          document.getElementById('profile-name').textContent = '—';
+          document.getElementById('profile-level').textContent = 'не задан';
+        }
+      } catch (e) {
+        console.error('Ошибка загрузки профиля:', e);
+        window.currentUserProfile = null;
         document.getElementById('profile-name').textContent = '—';
         document.getElementById('profile-level').textContent = 'не задан';
       }
-    } else {
-      document.getElementById('profile-name').textContent = '—';
-      document.getElementById('profile-level').textContent = 'не задан';
+      showHome();
     }
-  } catch (e) {
-    console.error('Ошибка загрузки профиля:', e);
-    document.getElementById('profile-name').textContent = '—';
-    document.getElementById('profile-level').textContent = 'не задан';
-  }
-  showHome();
-}
 
     async function saveProfile() {
       const name = document.getElementById('name-input').value.trim();
@@ -259,6 +263,11 @@
           body: JSON.stringify(data)
         });
         if (res.ok) {
+          // Обновляем глобальный профиль после сохранения
+          window.currentUserProfile = {
+            first_name: name,
+            level: level
+          };
           document.getElementById('profile-name').textContent = name;
           document.getElementById('profile-level').textContent = level;
           Telegram.WebApp.showAlert('✅ Профиль сохранён!');
