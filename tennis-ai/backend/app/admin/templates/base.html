@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="ru" data-bs-theme="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+  <title>{% block title %}Tennis AI Admin{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.29.0/tabler-icons.min.css">
+  <style>
+    :root {
+      --tblr-font-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    .navbar-brand-image {
+      height: 32px;
+    }
+    .navbar-brand span {
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .sidebar-icon {
+      width: 20px;
+      height: 20px;
+    }
+    .stat-card {
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .nav-link.active {
+      background: rgba(var(--tblr-primary-rgb), 0.12);
+      border-radius: 6px;
+    }
+    .table-responsive { border-radius: 8px; }
+    .badge-pill { border-radius: 50px; }
+    .avatar-initials {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body class="antialiased">
+  <div class="wrapper">
+
+    <!-- Sidebar -->
+    <aside class="navbar navbar-vertical navbar-expand-lg" data-bs-theme="dark">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <h1 class="navbar-brand navbar-brand-autodark">
+          <a href="/panel/">
+            <span class="d-flex align-items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M 6 12 Q 12 6 18 12"/>
+                <path d="M 6 12 Q 12 18 18 12"/>
+              </svg>
+              <span>Tennis<span class="text-primary">AI</span></span>
+            </span>
+          </a>
+        </h1>
+
+        <div class="collapse navbar-collapse" id="sidebar-menu">
+          <ul class="navbar-nav pt-lg-3">
+
+            <li class="nav-item">
+              <a class="nav-link {% if request.url.path == '/panel/' %}active{% endif %}" href="/panel/">
+                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                  <i class="ti ti-layout-dashboard" style="font-size:20px"></i>
+                </span>
+                <span class="nav-link-title">Дашборд</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link {% if '/panel/users' in request.url.path %}active{% endif %}" href="/panel/users">
+                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                  <i class="ti ti-users" style="font-size:20px"></i>
+                </span>
+                <span class="nav-link-title">Пользователи</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link {% if '/panel/trainer-applications' in request.url.path %}active{% endif %}" href="/panel/trainer-applications">
+                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                  <i class="ti ti-certificate" style="font-size:20px"></i>
+                </span>
+                <span class="nav-link-title">Заявки тренеров</span>
+                {% if pending_count is defined and pending_count > 0 %}
+                  <span class="badge bg-danger ms-auto">{{ pending_count }}</span>
+                {% endif %}
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link {% if '/panel/locations' in request.url.path %}active{% endif %}" href="/panel/locations">
+                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                  <i class="ti ti-map-pin" style="font-size:20px"></i>
+                </span>
+                <span class="nav-link-title">Локации</span>
+              </a>
+            </li>
+
+            <li class="nav-item mt-3">
+              <div class="nav-link text-muted small fw-semibold" style="cursor:default; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; padding-bottom:4px;">
+                Sqladmin
+              </div>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/" target="_blank">
+                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                  <i class="ti ti-settings" style="font-size:20px"></i>
+                </span>
+                <span class="nav-link-title">Sqladmin</span>
+                <i class="ti ti-external-link ms-auto" style="font-size:14px; opacity:0.5"></i>
+              </a>
+            </li>
+
+          </ul>
+
+          <div class="mt-auto pb-3">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link text-danger" href="/panel/logout">
+                  <span class="nav-link-icon d-md-none d-lg-inline-block">
+                    <i class="ti ti-logout" style="font-size:20px"></i>
+                  </span>
+                  <span class="nav-link-title">Выйти</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Page wrapper -->
+    <div class="page-wrapper">
+
+      <!-- Page header -->
+      <div class="page-header d-print-none">
+        <div class="container-xl">
+          <div class="row g-2 align-items-center">
+            <div class="col">
+              {% block breadcrumb %}{% endblock %}
+              <h2 class="page-title">{% block page_title %}{% endblock %}</h2>
+            </div>
+            <div class="col-auto ms-auto d-print-none">
+              <div class="d-flex align-items-center gap-3">
+                {% if admin %}
+                <div class="d-flex align-items-center gap-2">
+                  <div class="avatar-initials bg-primary text-white">
+                    {{ admin.full_name[:2] if admin.full_name else 'AD' }}
+                  </div>
+                  <div class="d-none d-sm-block">
+                    <div class="fw-semibold" style="font-size:13px;">{{ admin.full_name }}</div>
+                    <div class="text-muted" style="font-size:11px;">Администратор</div>
+                  </div>
+                </div>
+                {% endif %}
+                <a href="/panel/logout" class="btn btn-outline-danger btn-sm">
+                  <i class="ti ti-logout me-1"></i>Выйти
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page body -->
+      <div class="page-body">
+        <div class="container-xl">
+          {% block content %}{% endblock %}
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="footer footer-transparent d-print-none">
+        <div class="container-xl">
+          <div class="row text-center align-items-center flex-row-reverse">
+            <div class="col-12 col-lg-auto mt-3 mt-lg-0">
+              <ul class="list-inline list-inline-dots mb-0">
+                <li class="list-inline-item">
+                  Tennis AI Admin &copy; {{ 2026 }}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

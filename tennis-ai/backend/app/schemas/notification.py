@@ -1,0 +1,26 @@
+import uuid
+from datetime import datetime
+
+from pydantic import BaseModel
+
+
+class NotificationResponse(BaseModel):
+    id: uuid.UUID
+    type: str
+    title: str
+    body: str | None
+    reference_type: str | None
+    reference_id: uuid.UUID | None
+    is_read: bool
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class DeviceTokenCreate(BaseModel):
+    token: str
+    platform: str
+
+
+class UnreadCountResponse(BaseModel):
+    count: int

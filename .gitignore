@@ -1,0 +1,46 @@
+# Local secrets and configuration
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+**/firebase-credentials.json
+**/google-services.json
+**/GoogleService-Info.plist
+**/*.keystore
+**/*.jks
+**/*.p12
+**/*.mobileprovision
+
+# Dependencies and generated output
+**/node_modules/
+**/.gradle/
+**/.cxx/
+**/build/
+**/out/
+**/dist/
+**/Pods/
+**/DerivedData/
+**/xcuserdata/
+**/*.xcuserstate
+**/coverage/
+**/.pytest_cache/
+**/__pycache__/
+**/*.py[cod]
+**/*.tsbuildinfo
+**/local.properties
+**/index.android.bundle
+
+# Build artifacts
+*.apk
+*.aab
+*.ipa
+*.exe
+*.zip
+
+# Editor and OS files
+.DS_Store
+.idea/
+.vscode/
+*.swp

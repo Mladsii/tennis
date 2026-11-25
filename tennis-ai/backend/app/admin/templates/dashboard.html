@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+
+{% block title %}Дашборд — Tennis AI Admin{% endblock %}
+{% block page_title %}Дашборд{% endblock %}
+
+{% block breadcrumb %}
+<ol class="breadcrumb" aria-label="breadcrumbs">
+  <li class="breadcrumb-item active"><a href="/panel/">Главная</a></li>
+</ol>
+{% endblock %}
+
+{% block content %}
+
+<!-- Stats grid -->
+<div class="row row-deck row-cards mb-4">
+
+  <!-- Total users -->
+  <div class="col-sm-6 col-lg-3">
+    <div class="card stat-card">
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+          <div class="subheader text-muted fw-semibold" style="font-size:11px; letter-spacing:0.08em; text-transform:uppercase;">Пользователей</div>
+          <div class="ms-auto">
+            <span class="bg-blue text-white avatar avatar-sm rounded">
+              <i class="ti ti-users" style="font-size:18px"></i>
+            </span>
+          </div>
+        </div>
+        <div class="h1 mb-0">{{ stats.total_users }}</div>
+        <div class="d-flex align-items-center mt-2 gap-2">
+          <span class="badge bg-green-lt text-green">
+            <i class="ti ti-plus" style="font-size:12px"></i>{{ stats.new_today }} сегодня
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active searches -->
+  <div class="col-sm-6 col-lg-3">
+    <div class="card stat-card">
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+          <div class="subheader text-muted fw-semibold" style="font-size:11px; letter-spacing:0.08em; text-transform:uppercase;">Активных поисков</div>
+          <div class="ms-auto">
+            <span class="bg-cyan text-white avatar avatar-sm rounded">
+              <i class="ti ti-search" style="font-size:18px"></i>
+            </span>
+          </div>
+        </div>
+        <div class="h1 mb-0">{{ stats.active_searches }}</div>
+        <div class="mt-2">
+          <span class="text-muted" style="font-size:13px;">прямо сейчас</span>
+          {% if stats.active_searches > 0 %}
+          <span class="badge bg-cyan-lt text-cyan ms-1">live</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bookings today -->
+  <div class="col-sm-6 col-lg-3">
+    <div class="card stat-card">
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+          <div class="subheader text-muted fw-semibold" style="font-size:11px; letter-spacing:0.08em; text-transform:uppercase;">Бронирований сегодня</div>
+          <div class="ms-auto">
+            <span class="bg-teal text-white avatar avatar-sm rounded">
+              <i class="ti ti-calendar-event" style="font-size:18px"></i>
+            </span>
+          </div>
+        </div>
+        <div class="h1 mb-0">{{ stats.bookings_today }}</div>
+        <div class="mt-2">
+          <span class="text-muted" style="font-size:13px;">корт-бронирований</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending trainer applications -->
+  <div class="col-sm-6 col-lg-3">
+    <div class="card stat-card {% if stats.pending_trainers > 0 %}border-warning{% endif %}">
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+          <div class="subheader text-muted fw-semibold" style="font-size:11px; letter-spacing:0.08em; text-transform:uppercase;">Заявок тренеров</div>
+          <div class="ms-auto">
+            <span class="{% if stats.pending_trainers > 0 %}bg-warning{% else %}bg-secondary{% endif %} text-white avatar avatar-sm rounded">
+              <i class="ti ti-certificate" style="font-size:18px"></i>
+            </span>
+          </div>
+        </div>
+        <div class="h1 mb-0">{{ stats.pending_trainers }}</div>
+        <div class="mt-2">
+          {% if stats.pending_trainers > 0 %}
+          <a href="/panel/trainer-applications" class="badge bg-warning-lt text-warning text-decoration-none">
+            Требуют проверки &rarr;
+          </a>
+          {% else %}
+          <span class="badge bg-green-lt text-green">Всё проверено</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total matches -->
+  <div class="col-sm-6 col-lg-3">
+    <div class="card stat-card">
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+          <div class="subheader text-muted fw-semibold" style="font-size:11px; letter-spacing:0.08em; text-transform:uppercase;">Матчей</div>
+          <div class="ms-auto">
+            <span class="bg-orange text-white avatar avatar-sm rounded">
+              <i class="ti ti-trophy" style="font-size:18px"></i>
+            </span>
+          </div>
+        </div>
+        <div class="h1 mb-0">{{ stats.total_matches }}</div>
+        <div class="mt-2">
+          <span class="text-muted" style="font-size:13px;">всего сыграно</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total competitions -->
+  <div class="col-sm-6 col-lg-3">
+    <div class="card stat-card">
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+          <div class="subheader text-muted fw-semibold" style="font-size:11px; letter-spacing:0.08em; text-transform:uppercase;">Соревнований</div>
+          <div class="ms-auto">
+            <span class="bg-purple text-white avatar avatar-sm rounded">
+              <i class="ti ti-tournament" style="font-size:18px"></i>
+            </span>
+          </div>
+        </div>
+        <div class="h1 mb-0">{{ stats.total_competitions }}</div>
+        <div class="mt-2">
+          <span class="text-muted" style="font-size:13px;">турниров</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total trainings -->
+  <div class="col-sm-6 col-lg-3">
+    <div class="card stat-card">
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+          <div class="subheader text-muted fw-semibold" style="font-size:11px; letter-spacing:0.08em; text-transform:uppercase;">Тренировок</div>
+          <div class="ms-auto">
+            <span class="bg-pink text-white avatar avatar-sm rounded">
+              <i class="ti ti-ball-tennis" style="font-size:18px"></i>
+            </span>
+          </div>
+        </div>
+        <div class="h1 mb-0">{{ stats.total_trainings }}</div>
+        <div class="mt-2">
+          <span class="text-muted" style="font-size:13px;">всего создано</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New today highlight -->
+  <div class="col-sm-6 col-lg-3">
+    <div class="card stat-card" style="background: linear-gradient(135deg, #1e3a5f 0%, #1e293b 100%); border: 1px solid rgba(37,99,235,0.3);">
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+          <div class="subheader fw-semibold" style="font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:#60a5fa;">Новых сегодня</div>
+          <div class="ms-auto">
+            <span class="bg-blue text-white avatar avatar-sm rounded">
+              <i class="ti ti-user-plus" style="font-size:18px"></i>
+            </span>
+          </div>
+        </div>
+        <div class="h1 mb-0" style="color:#60a5fa;">{{ stats.new_today }}</div>
+        <div class="mt-2">
+          <div class="progress" style="height:4px; background:rgba(96,165,250,0.15);">
+            {% set pct = [((stats.new_today / [stats.total_users, 1]|max) * 100)|int, 100]|min %}
+            <div class="progress-bar bg-blue" style="width:{{ pct }}%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Bottom row: last registrations + pending applications -->
+<div class="row row-cards">
+
+  <!-- Last 10 registrations -->
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="ti ti-clock-hour-3 me-2 text-muted"></i>Последние регистрации
+        </h3>
+        <div class="card-options">
+          <a href="/panel/users" class="btn btn-sm btn-outline-primary">
+            Все пользователи <i class="ti ti-arrow-right ms-1"></i>
+          </a>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-vcenter card-table table-hover">
+          <thead>
+            <tr>
+              <th>Пользователь</th>
+              <th>Телефон</th>
+              <th>STM</th>
+              <th>ELO</th>
+              <th>Статус</th>
+              <th>Дата</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in last_users %}
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="avatar-initials {% if u.gender == 'F' %}bg-pink{% else %}bg-blue{% endif %} text-white" style="width:32px;height:32px;font-size:11px;">
+                    {{ (u.first_name[:1] + u.last_name[:1])|upper if u.first_name and u.last_name else '?' }}
+                  </div>
+                  <div>
+                    <div class="fw-semibold" style="font-size:13px;">
+                      {{ u.last_name }} {{ u.first_name }}
+                    </div>
+                    <div class="text-muted" style="font-size:11px;">@{{ u.nickname }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="text-muted" style="font-size:13px;">{{ u.phone_primary }}</td>
+              <td>
+                <span class="badge bg-blue-lt text-blue">{{ u.stm_level }}</span>
+              </td>
+              <td>
+                <span class="fw-semibold">{{ u.elo_rating }}</span>
+              </td>
+              <td>
+                {% if u.is_admin %}
+                  <span class="badge bg-purple text-white">Admin</span>
+                {% elif u.trainer_status == 'approved' %}
+                  <span class="badge bg-green-lt text-green">Тренер</span>
+                {% elif u.trainer_status == 'pending' %}
+                  <span class="badge bg-warning-lt text-warning">Pending</span>
+                {% else %}
+                  <span class="badge bg-secondary-lt text-muted">Игрок</span>
+                {% endif %}
+              </td>
+              <td class="text-muted" style="font-size:12px;">
+                {{ u.created_at.strftime('%d.%m.%Y') if u.created_at else '—' }}
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="6" class="text-center text-muted py-4">Нет пользователей</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending trainer applications -->
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="ti ti-certificate me-2 text-warning"></i>Заявки тренеров
+        </h3>
+        {% if pending_apps %}
+        <div class="card-options">
+          <a href="/panel/trainer-applications" class="btn btn-sm btn-outline-warning">
+            Все <i class="ti ti-arrow-right ms-1"></i>
+          </a>
+        </div>
+        {% endif %}
+      </div>
+      <div class="card-body p-0">
+        {% if pending_apps %}
+        <ul class="list-group list-group-flush">
+          {% for u in pending_apps %}
+          <li class="list-group-item px-3 py-3">
+            <div class="d-flex align-items-start gap-2">
+              <div class="avatar-initials bg-orange text-white" style="width:36px;height:36px;font-size:12px;flex-shrink:0;">
+                {{ (u.first_name[:1] + u.last_name[:1])|upper if u.first_name and u.last_name else '?' }}
+              </div>
+              <div class="flex-grow-1 min-w-0">
+                <div class="fw-semibold" style="font-size:13px;">
+                  {{ u.last_name }} {{ u.first_name }}
+                </div>
+                <div class="text-muted" style="font-size:11px; margin-bottom:6px;">{{ u.phone_primary }}</div>
+                <div class="d-flex gap-1 flex-wrap">
+                  {% if u.trainer_individual %}
+                  <span class="badge bg-blue-lt text-blue" style="font-size:10px;">Индивид.</span>
+                  {% endif %}
+                  {% if u.trainer_group %}
+                  <span class="badge bg-cyan-lt text-cyan" style="font-size:10px;">Группы</span>
+                  {% endif %}
+                  {% if u.trainer_kids %}
+                  <span class="badge bg-green-lt text-green" style="font-size:10px;">Дети</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="d-flex flex-column gap-1">
+                <form action="/panel/trainer-applications/{{ u.id }}/approve" method="post">
+                  <button type="submit" class="btn btn-sm btn-success" title="Одобрить">
+                    <i class="ti ti-check"></i>
+                  </button>
+                </form>
+                <form action="/panel/trainer-applications/{{ u.id }}/reject" method="post">
+                  <button type="submit" class="btn btn-sm btn-danger" title="Отклонить">
+                    <i class="ti ti-x"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div class="d-flex flex-column align-items-center justify-content-center py-5 text-muted">
+          <i class="ti ti-circle-check mb-2" style="font-size:40px; opacity:0.3;"></i>
+          <p class="mb-0" style="font-size:13px;">Нет ожидающих заявок</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

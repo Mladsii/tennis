@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Локации — Tennis AI Admin{% endblock %}
+{% block page_title %}Локации и корты{% endblock %}
+
+{% block breadcrumb %}
+<ol class="breadcrumb" aria-label="breadcrumbs">
+  <li class="breadcrumb-item"><a href="/panel/">Главная</a></li>
+  <li class="breadcrumb-item active">Локации</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+
+<!-- Summary bar -->
+<div class="row mb-4">
+  <div class="col-auto">
+    <div class="d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center gap-2 px-3 py-2 rounded" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);">
+        <i class="ti ti-map-pin text-primary" style="font-size:18px;"></i>
+        <span class="fw-semibold">{{ locations|length }} локаций</span>
+      </div>
+      <div class="d-flex align-items-center gap-2 px-3 py-2 rounded" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);">
+        <i class="ti ti-square text-teal" style="font-size:18px;"></i>
+        <span class="fw-semibold">{{ courts_count.values()|sum }} кортов</span>
+      </div>
+      <div class="d-flex align-items-center gap-2 px-3 py-2 rounded" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);">
+        <i class="ti ti-circle-check text-green" style="font-size:18px;"></i>
+        <span class="fw-semibold">{{ locations|selectattr('is_active')|list|length }} активных</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-auto ms-auto">
+    <a href="/admin/location/list" target="_blank" class="btn btn-outline-primary btn-sm">
+      <i class="ti ti-edit me-1"></i>Редактировать в Sqladmin
+    </a>
+  </div>
+</div>
+
+<!-- Locations table -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">
+      <i class="ti ti-building-stadium me-2 text-muted"></i>Все локации
+    </h3>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-vcenter card-table table-hover">
+      <thead>
+        <tr>
+          <th style="width:1%">#</th>
+          <th>Название</th>
+          <th>Город</th>
+          <th>Адрес</th>
+          <th class="text-center">Кортов</th>
+          <th class="text-center">Координаты</th>
+          <th class="text-center">Статус</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for loc in locations %}
+        <tr>
+          <td class="text-muted" style="font-size:12px;">{{ loop.index }}</td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div class="p-2 rounded" style="background:rgba(37,99,235,0.12); flex-shrink:0;">
+                <i class="ti ti-map-pin text-primary" style="font-size:16px;"></i>
+              </div>
+              <div>
+                <div class="fw-semibold" style="font-size:14px;">{{ loc.name }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="badge bg-blue-lt text-blue">
+              <i class="ti ti-building-community" style="font-size:11px;"></i> {{ loc.city }}
+            </span>
+          </td>
+          <td class="text-muted" style="font-size:13px; max-width:250px;">
+            <span title="{{ loc.address }}">
+              {{ loc.address[:60] }}{% if loc.address|length > 60 %}…{% endif %}
+            </span>
+          </td>
+          <td class="text-center">
+            {% set cnt = courts_count.get(loc.id|string, 0) %}
+            {% if cnt > 0 %}
+            <span class="badge bg-teal text-white">
+              <i class="ti ti-square-rotated" style="font-size:11px;"></i> {{ cnt }}
+            </span>
+            {% else %}
+            <span class="text-muted" style="font-size:12px;">—</span>
+            {% endif %}
+          </td>
+          <td class="text-center">
+            {% if loc.latitude and loc.longitude %}
+            <a
+              href="https://maps.google.com/?q={{ loc.latitude }},{{ loc.longitude }}"
+              target="_blank"
+              class="badge bg-secondary-lt text-secondary text-decoration-none"
+              title="{{ loc.latitude }}, {{ loc.longitude }}"
+            >
+              <i class="ti ti-map-2" style="font-size:11px;"></i> Maps
+            </a>
+            {% else %}
+            <span class="text-muted" style="font-size:12px;">—</span>
+            {% endif %}
+          </td>
+          <td class="text-center">
+            {% if loc.is_active %}
+            <span class="badge bg-green text-white">
+              <i class="ti ti-circle-filled" style="font-size:8px;"></i> Активна
+            </span>
+            {% else %}
+            <span class="badge bg-red-lt text-red">
+              <i class="ti ti-circle-x" style="font-size:11px;"></i> Неактивна
+            </span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="text-center py-5 text-muted">
+            <i class="ti ti-map-off mb-2" style="font-size:32px; display:block; opacity:0.3;"></i>
+            Нет локаций
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- City breakdown -->
+{% if locations %}
+<div class="row row-cards mt-4">
+  {% set cities = {} %}
+  {% for loc in locations %}
+    {% if loc.city in cities %}
+      {# Jinja2 doesn't allow dict mutation directly, use ns #}
+    {% endif %}
+  {% endfor %}
+
+  {% set ns = namespace(city_groups={}) %}
+  {% for loc in locations %}
+    {% set city = loc.city %}
+    {% if city not in ns.city_groups %}
+      {% set _ = ns.city_groups.update({city: []}) %}
+    {% endif %}
+  {% endfor %}
+
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="ti ti-chart-bar me-2 text-muted"></i>По городам
+        </h3>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          {% set city_dict = {} %}
+          {% for loc in locations %}
+            {% if loc.city not in city_dict %}
+              {# use a workaround to group #}
+            {% endif %}
+          {% endfor %}
+
+          {# Group by city using loop — Jinja2 workaround #}
+          {% set all_cities = locations | map(attribute='city') | unique | list | sort %}
+          {% for city in all_cities %}
+            {% set city_locs = locations | selectattr('city', 'equalto', city) | list %}
+            {% set active_cnt = city_locs | selectattr('is_active') | list | length %}
+            {% set total_cnt = city_locs | length %}
+            {% set pct = ((active_cnt / total_cnt) * 100) | int if total_cnt > 0 else 0 %}
+            <div class="col-md-6 col-lg-4">
+              <div class="p-3 rounded" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div class="fw-semibold">{{ city }}</div>
+                  <div class="d-flex gap-1">
+                    <span class="badge bg-teal-lt text-teal" style="font-size:11px;">{{ total_cnt }} лок.</span>
+                    {% set total_courts_city = namespace(cnt=0) %}
+                    {% for l in city_locs %}
+                      {% set total_courts_city.cnt = total_courts_city.cnt + courts_count.get(l.id|string, 0) %}
+                    {% endfor %}
+                    {% if total_courts_city.cnt > 0 %}
+                    <span class="badge bg-blue-lt text-blue" style="font-size:11px;">{{ total_courts_city.cnt }} корт.</span>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="progress" style="height:5px; border-radius:3px;">
+                  <div class="progress-bar bg-green" style="width:{{ pct }}%"></div>
+                </div>
+                <div class="text-muted mt-1" style="font-size:11px;">{{ active_cnt }} из {{ total_cnt }} активны</div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Заявки тренеров — Tennis AI Admin{% endblock %}
+{% block page_title %}Заявки тренеров{% endblock %}
+
+{% block breadcrumb %}
+<ol class="breadcrumb" aria-label="breadcrumbs">
+  <li class="breadcrumb-item"><a href="/panel/">Главная</a></li>
+  <li class="breadcrumb-item active">Заявки тренеров</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+
+<!-- Header stats -->
+<div class="row mb-4">
+  <div class="col-auto">
+    <div class="d-flex align-items-center gap-3">
+      {% if applicants %}
+      <div class="d-flex align-items-center gap-2 px-3 py-2 rounded" style="background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.2);">
+        <i class="ti ti-clock text-warning" style="font-size:18px;"></i>
+        <span class="fw-semibold text-warning">{{ applicants|length }} ожидают проверки</span>
+      </div>
+      {% else %}
+      <div class="d-flex align-items-center gap-2 px-3 py-2 rounded" style="background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.2);">
+        <i class="ti ti-circle-check text-green" style="font-size:18px;"></i>
+        <span class="fw-semibold text-green">Все заявки обработаны</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Pending applications -->
+{% if applicants %}
+<h3 class="fw-semibold mb-3 d-flex align-items-center gap-2">
+  <span class="badge bg-warning text-dark" style="font-size:14px;">{{ applicants|length }}</span>
+  Ожидают проверки
+</h3>
+
+<div class="row row-cards mb-5">
+  {% for u in applicants %}
+  <div class="col-md-6 col-xl-4">
+    <div class="card h-100" style="border: 1px solid rgba(251,191,36,0.25);">
+      <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <div class="d-flex align-items-center gap-3">
+          <div class="avatar-initials bg-orange text-white" style="width:44px;height:44px;font-size:15px;">
+            {{ (u.first_name[:1] + u.last_name[:1])|upper if u.first_name and u.last_name else '?' }}
+          </div>
+          <div>
+            <div class="fw-bold" style="font-size:15px;">
+              {{ u.last_name }} {{ u.first_name }}
+              {% if u.patronymic %} {{ u.patronymic }}{% endif %}
+            </div>
+            <div class="text-muted" style="font-size:12px;">
+              <i class="ti ti-at" style="font-size:12px;"></i>{{ u.nickname }}
+              &nbsp;·&nbsp;
+              <i class="ti ti-phone" style="font-size:12px;"></i>{{ u.phone_primary }}
+            </div>
+          </div>
+          <div class="ms-auto">
+            <span class="badge bg-warning text-dark">
+              <i class="ti ti-clock" style="font-size:11px;"></i> Pending
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <!-- Player info -->
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <div class="p-2 rounded text-center" style="background:rgba(255,255,255,0.04);">
+              <div class="text-muted" style="font-size:10px; text-transform:uppercase; letter-spacing:0.06em;">STM</div>
+              <div class="fw-bold text-blue">{{ u.stm_level }}</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-2 rounded text-center" style="background:rgba(255,255,255,0.04);">
+              <div class="text-muted" style="font-size:10px; text-transform:uppercase; letter-spacing:0.06em;">ELO</div>
+              <div class="fw-bold">{{ u.elo_rating }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Specialization badges -->
+        <div class="mb-3">
+          <div class="text-muted mb-1" style="font-size:11px; text-transform:uppercase; letter-spacing:0.06em;">Специализация</div>
+          <div class="d-flex flex-wrap gap-1">
+            {% if u.trainer_individual %}
+            <span class="badge bg-blue-lt text-blue">
+              <i class="ti ti-user" style="font-size:11px;"></i> Индивидуальные
+            </span>
+            {% endif %}
+            {% if u.trainer_group %}
+            <span class="badge bg-cyan-lt text-cyan">
+              <i class="ti ti-users" style="font-size:11px;"></i> Групповые
+            </span>
+            {% endif %}
+            {% if u.trainer_kids %}
+            <span class="badge bg-green-lt text-green">
+              <i class="ti ti-heart" style="font-size:11px;"></i> Детские
+            </span>
+            {% endif %}
+            {% if u.trainer_disabled %}
+            <span class="badge bg-purple-lt text-purple">
+              <i class="ti ti-accessible" style="font-size:11px;"></i> С ОВЗ
+            </span>
+            {% endif %}
+            {% if not u.trainer_individual and not u.trainer_group and not u.trainer_kids and not u.trainer_disabled %}
+            <span class="text-muted" style="font-size:12px;">Не указана</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Skills -->
+        {% if u.trainer_skills %}
+        <div class="mb-3">
+          <div class="text-muted mb-1" style="font-size:11px; text-transform:uppercase; letter-spacing:0.06em;">Навыки</div>
+          <p class="mb-0" style="font-size:13px; line-height:1.5; color:#94a3b8;">
+            {{ u.trainer_skills[:200] }}{% if u.trainer_skills|length > 200 %}…{% endif %}
+          </p>
+        </div>
+        {% endif %}
+
+        <!-- Education -->
+        {% if u.trainer_education %}
+        <div class="mb-3">
+          <div class="text-muted mb-1" style="font-size:11px; text-transform:uppercase; letter-spacing:0.06em;">Образование</div>
+          <p class="mb-0" style="font-size:13px; line-height:1.5; color:#94a3b8;">
+            {{ u.trainer_education[:150] }}{% if u.trainer_education|length > 150 %}…{% endif %}
+          </p>
+        </div>
+        {% endif %}
+
+        <!-- Achievements -->
+        {% if u.trainer_achievements %}
+        <div class="mb-3">
+          <div class="text-muted mb-1" style="font-size:11px; text-transform:uppercase; letter-spacing:0.06em;">Достижения</div>
+          <p class="mb-0" style="font-size:13px; line-height:1.5; color:#94a3b8;">
+            {{ u.trainer_achievements[:150] }}{% if u.trainer_achievements|length > 150 %}…{% endif %}
+          </p>
+        </div>
+        {% endif %}
+
+        <div class="text-muted mt-auto pt-2" style="font-size:11px;">
+          Заявка подана: {{ u.created_at.strftime('%d.%m.%Y в %H:%M') if u.created_at else '—' }}
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <div class="row g-2">
+          <div class="col-6">
+            <form action="/panel/trainer-applications/{{ u.id }}/approve" method="post">
+              <button type="submit" class="btn btn-success w-100">
+                <i class="ti ti-check me-1"></i>Одобрить
+              </button>
+            </form>
+          </div>
+          <div class="col-6">
+            <form action="/panel/trainer-applications/{{ u.id }}/reject" method="post">
+              <button type="submit" class="btn btn-danger w-100">
+                <i class="ti ti-x me-1"></i>Отклонить
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Recently reviewed -->
+{% if reviewed %}
+<h3 class="fw-semibold mb-3 d-flex align-items-center gap-2">
+  <i class="ti ti-history text-muted"></i>
+  Обработанные заявки
+  <span class="badge bg-secondary-lt text-muted" style="font-size:13px;">{{ reviewed|length }}</span>
+</h3>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-vcenter card-table table-hover">
+      <thead>
+        <tr>
+          <th>Пользователь</th>
+          <th>Телефон</th>
+          <th>Специализация</th>
+          <th>Статус</th>
+          <th>Дата</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in reviewed %}
+        <tr>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div class="avatar-initials
+                {% if u.trainer_status == 'approved' %}bg-green{% else %}bg-red{% endif %}
+                text-white" style="width:32px;height:32px;font-size:11px;">
+                {{ (u.first_name[:1] + u.last_name[:1])|upper if u.first_name and u.last_name else '?' }}
+              </div>
+              <div>
+                <div class="fw-semibold" style="font-size:13px;">{{ u.last_name }} {{ u.first_name }}</div>
+                <div class="text-muted" style="font-size:11px;">@{{ u.nickname }}</div>
+              </div>
+            </div>
+          </td>
+          <td class="text-muted" style="font-size:13px;">{{ u.phone_primary }}</td>
+          <td>
+            <div class="d-flex flex-wrap gap-1">
+              {% if u.trainer_individual %}<span class="badge bg-blue-lt text-blue" style="font-size:10px;">Индивид.</span>{% endif %}
+              {% if u.trainer_group %}<span class="badge bg-cyan-lt text-cyan" style="font-size:10px;">Группы</span>{% endif %}
+              {% if u.trainer_kids %}<span class="badge bg-green-lt text-green" style="font-size:10px;">Дети</span>{% endif %}
+            </div>
+          </td>
+          <td>
+            {% if u.trainer_status == 'approved' %}
+              <span class="badge bg-green text-white">
+                <i class="ti ti-check" style="font-size:11px;"></i> Одобрен
+              </span>
+            {% elif u.trainer_status == 'rejected' %}
+              <span class="badge bg-red text-white">
+                <i class="ti ti-x" style="font-size:11px;"></i> Отклонён
+              </span>
+            {% endif %}
+          </td>
+          <td class="text-muted" style="font-size:12px;">
+            {{ u.created_at.strftime('%d.%m.%Y') if u.created_at else '—' }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if not applicants and not reviewed %}
+<div class="card">
+  <div class="card-body py-6 text-center">
+    <i class="ti ti-certificate mb-3" style="font-size:48px; opacity:0.2; display:block;"></i>
+    <p class="text-muted">Нет заявок тренеров</p>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

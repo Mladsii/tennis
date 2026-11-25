@@ -1,0 +1,60 @@
+{
+  "name": "tennis-club-manager",
+  "version": "0.1.0",
+  "description": "Desktop management app for tennis clubs",
+  "main": "out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "package": "npm run build && electron-builder",
+    "package:win": "npm run build && electron-builder --win --x64",
+    "package:win:arm64": "npm run build && electron-builder --win --arm64",
+    "package:mac": "npm run build && electron-builder --mac"
+  },
+  "build": {
+    "appId": "com.tennisclub.manager",
+    "productName": "Tennis Club Manager",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "out/**/*"
+    ],
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "include": "build/installer.nsh"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "mac": {
+      "target": "dmg"
+    }
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "jsqr": "^1.4.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.24.1",
+    "zustand": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "electron": "22.3.27",
+    "electron-builder": "^24.0.0",
+    "electron-vite": "^2.3.0",
+    "typescript": "^5.5.2",
+    "vite": "^5.3.1"
+  }
+}
